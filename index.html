@@ -1,0 +1,817 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+  <title>COGNI - on BASE</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+/* Reset + base */
+*{ box-sizing:border-box; margin:0; padding:0; }
+:root{
+  --accent:#00eaff;
+  --bg:#071024;
+  --card-bg:#0b1622;
+  --muted:#98a3b3;
+  --glass: rgba(255,255,255,0.03);
+}
+
+/* FULL-PAGE BACKGROUND IMAGE FIX */
+html, body {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-image: url("c9.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed; /* makes it stay while scrolling */
+  color:#e6faff;
+  font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* particles layer */
+#particles-wrapper{ position:fixed; inset:0; z-index:0; pointer-events:none; }
+
+/* page content above particles */
+.page{ position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; }
+
+/* NAV */
+nav{
+  display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding:12px 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+  backdrop-filter: blur(6px);
+  border-bottom:1px solid rgba(255,255,255,0.03);
+  position:sticky; top:0; z-index:6;
+}
+.nav-left{ display:flex; align-items:center; gap:12px; }
+.nav-logo{ height:40px; width:auto; max-width:140px; object-fit:contain; border-radius:8px; background:rgba(255,255,255,0.02); padding:4px; }
+
+/* links (desktop) */
+.nav-links{ display:block; }
+.nav-links ul{ display:flex; gap:8px; list-style:none; margin:0; padding:6px; background: rgba(10,15,30,0.45); border-radius:999px; border:1px solid rgba(0,240,255,0.12); box-shadow:0 0 18px rgba(0,240,255,0.08); align-items:center; }
+.nav-links li{ margin:0; }
+.nav-links a{ display:inline-block; color:var(--muted); text-decoration:none; font-weight:600; padding:6px 10px; border-radius:999px; font-size:14px; transition: all .18s; }
+.nav-links a:hover{ color:#071217; background:linear-gradient(135deg,#00f0ff,#a34aff); box-shadow:0 6px 18px rgba(0,234,255,0.12); transform:translateY(-2px); color:#001219; }
+
+.nav-right{ display:flex; gap:10px; align-items:center; }
+.btn{ padding:10px 16px; border-radius:12px; border:0; cursor:pointer; background:linear-gradient(90deg,var(--accent),#46f1ff); color:#001219; font-weight:700; box-shadow:0 8px 28px rgba(0,234,255,0.08); }
+.btn.secondary{ background:transparent; color:var(--accent); border:1px solid rgba(0,234,255,0.08); box-shadow:none; }
+
+/* mobile menu toggle */
+.menu-toggle{ display:none; font-size:24px; color:var(--accent); background:transparent; border:0; cursor:pointer; padding:6px; }
+
+/* HERO */
+.hero{ padding:56px 18px; display:flex; gap:20px; align-items:flex-start; justify-content:space-between; }
+.hero-content{ max-width:720px; width:100%; }
+h1{ font-size:36px; line-height:1.05; margin-bottom:10px; color:#e6fbff; }
+p.lead{ color:var(--muted); margin-bottom:12px; font-size:15px; }
+
+/* CTA */
+.cta{ display:flex; gap:12px; margin-top:14px; flex-wrap:wrap; }
+
+/* image / nft grid + floating/glow */
+.image-container{ display:flex; flex-wrap:wrap; gap:14px; margin-top:16px; }
+.image-card{
+  width:170px; height:170px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius:14px; padding:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; transition: transform .32s, box-shadow .32s;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.45);
+}
+.image-card img{ width:100%; height:100%; object-fit:cover; border-radius:10px; transition: transform .36s ease, filter .36s ease; filter: drop-shadow(0 8px 20px rgba(0,0,0,0.6)); }
+.image-card:hover{ transform: translateY(-8px); box-shadow: 0 24px 48px rgba(0,234,255,0.12); }
+.image-card:hover img{ transform: scale(1.08); filter: drop-shadow(0 28px 40px rgba(0,234,255,0.18)); }
+
+.image-card::before{
+  content:''; position:absolute; inset:auto; width:70%; height:70%; border-radius:50%;
+  filter: blur(18px); opacity:0.0; transition:opacity .3s;
+  background: radial-gradient(circle at 30% 30%, rgba(0,234,255,0.22), transparent 40%);
+  pointer-events:none;
+}
+.image-card:hover::before{ opacity:1; }
+
+/* NFT hero box */
+.nft-box{
+  width:320px; height:320px; border-radius:16px; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:12px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow: 0 18px 40px rgba(0,0,0,0.45);
+}
+.nft-box img{ max-width:100%; max-height:100%; object-fit:contain; border-radius:12px; transition:transform .36s; }
+.nft-box:hover img{ transform:scale(1.03); }
+
+/* floating */
+@keyframes floatY { 0%{ transform:translateY(0) } 50%{ transform:translateY(-8px)} 100%{ transform:translateY(0)} }
+.float{ animation: floatY 5.5s ease-in-out infinite; }
+
+/* list containers */
+.list-container{ background:var(--card-bg); border-radius:12px; padding:16px; margin:12px 0; }
+.list-container ul{ list-style:none; padding-left:0; margin:0; }
+.list-container li{ padding:8px 0; border-bottom: 1px dashed rgba(255,255,255,0.03); font-size:15px; color:#dff7ff; }
+.list-container li:last-child{ border-bottom:none; }
+
+/* ROADMAP */
+.roadmap-wrap{ position:relative; padding:46px 18px; overflow:visible; background: linear-gradient(180deg, rgba(0,0,0,0.02), transparent); }
+.waves{ position:absolute; inset:0; z-index:0; pointer-events:none; opacity:0.9; }
+.roadmap-content{ position:relative; z-index:2; max-width:1100px; margin:0 auto; }
+.roadmap-svg{ width:100%; height:260px; display:block; }
+
+.marker{ fill:var(--accent); stroke:#05202a; stroke-width:2; filter: drop-shadow(0 8px 18px rgba(0,234,255,0.12)); }
+.marker-label{ fill:#e8fbff; font-size:13px; }
+
+/* Footer */
+footer{padding:24px;text-align:center;color:var(--muted);border-top:1px solid rgba(255,255,255,0.05);}
+
+/* Responsive */
+@media (max-width:880px){
+  .hero{ flex-direction:column; padding:36px 14px; gap:18px; }
+  .nav-links{ display:none; }
+  .menu-toggle{ display:inline-block; }
+  .nav-right{ gap:8px; }
+  .nft-box{ width:260px; height:260px; }
+  .image-card{ width:130px; height:130px; }
+  h1{ font-size:28px; }
+}
+
+nav.nav-open .nav-links{
+  display:block; position: absolute; top:64px; left:12px; right:12px; z-index:7;
+  background: linear-gradient(180deg, rgba(6,12,20,0.95), rgba(6,12,20,0.92)); border-radius:12px; padding:12px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+}
+nav.nav-open .nav-links ul{
+  display:flex; flex-direction:column; gap:8px; padding:6px;
+}
+nav.nav-open .nav-right{ display:flex; gap:8px; margin-top:8px; flex-direction:row; justify-content:center; width:100%; }
+
+img{ max-width:100%; display:block; height:auto; }
+
+/* your custom near-bottom glow */
+#near-bottom .list-container {
+  max-width: 520px;
+  margin: 25px auto;
+  padding: 20px;
+  background: rgba(10, 15, 30, 0.85);
+  border-radius: 18px;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.25),
+              0 0 45px rgba(0, 240, 255, 0.15);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+#near-bottom .list-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.45),
+              0 0 60px rgba(0, 240, 255, 0.30);
+}
+#near-bottom h3 {
+  text-align: center;
+  font-size: 22px;
+  color: #00eaff;
+  margin-bottom: 10px;
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+}
+#near-bottom ul { list-style: none; padding: 0; }
+#near-bottom li {
+  margin: 12px 0;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#near-bottom a {
+  color: #00f0ff;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: 0.3s ease;
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.85);
+}
+#near-bottom a:hover {
+  color: #ff007a;
+  text-shadow: 0 0 16px rgba(255, 0, 122, 1);
+  transform: scale(1.05);
+}
+
+/* wave glow */
+.waves svg path {
+  filter: drop-shadow(0 0 20px rgba(0, 238, 255, 0.578));
+}
+
+/* make sections transparent so background shows */
+.section {
+  background: transparent;
+}
+/* Buttons */
+.btn{padding:0.85rem 1.8rem;border-radius:999px;font-weight:600;text-decoration:none;transition:all .25s;}
+.btn-primary{background:linear-gradient(135deg,#22d3ee,#0ea5e9);color:#020617;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(34,211,238,.35);}
+.btn-secondary{border:1px solid #22d3ee;color:#22d3ee;}
+.btn-secondary:hover{background:rgba(34,211,238,.08);transform:translateY(-2px);}
+
+/*flaoting cubbes*/
+.cube-layer{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+}
+.cube{
+  position:absolute;
+  width:20px;
+  height:20px;
+  background:linear-gradient(135deg,#00eaff,#ff4aff);
+  transform:rotateX(45deg) rotateY(45deg);
+  opacity:0.6;
+  border-radius:4px;
+  animation-name:floatCube;
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
+}
+@keyframes floatCube{
+  0%{transform:translateY(0) rotateX(45deg) rotateY(45deg);}
+  50%{transform:translateY(-60px) rotateX(90deg) rotateY(90deg);}
+  100%{transform:translateY(0) rotateX(45deg) rotateY(45deg);}
+}
+  /* Floating effect */
+.float{
+  animation: floatY 6s ease-in-out infinite;
+}
+
+@keyframes floatY{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-20px)}
+}
+
+/* Mobile stacking */
+@media (max-width: 900px){
+  .hero{
+    flex-direction:column;
+    text-align:center;
+  }
+}
+/* Sections */
+section{position:relative;z-index:1;}
+.section-card{background:var(--card-bg);border-radius:18px;padding:24px;margin:0 auto 40px auto;box-shadow:0 0 28px rgba(0,234,255,.2);transition:transform .3s,box-shadow .3s;}
+.section-card:hover{transform:translateY(-6px);box-shadow:0 0 48px rgba(0,234,255,.4);}
+h2{text-align:center;font-size:28px;color:#00eaff;margin-bottom:16px;}
+ul{list-style:none;padding-left:0;}
+li{margin:12px 0;font-size:16px;}
+
+/* Floating effect */
+.float{
+  animation: floatY 6s ease-in-out infinite;
+}
+
+footer.py-8 {
+  color: #00eaff;
+}
+
+.nft-card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+  border-radius: 18px;
+  padding: 14px;
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0,234,255,.2);
+  transition: transform .3s, box-shadow .3s;
+}
+
+.nft-card img{
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.nft-card:hover{
+  transform: translateY(-8px);
+  box-shadow: 0 20px 50px rgba(0,234,255,.4);
+}
+
+  </style>
+</head>
+<body>
+<!--Floating cubes-->
+<div class="cube-layer" id="cubelayer"></div>
+  <div class="page">
+    <!-- NAV -->
+    <nav id="site-nav">
+  <div class="nav-left">
+    <img src="c1.jpg" alt="COGNI logo" class="nav-logo" />
+
+    <div class="nav-links" id="nav-links">
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#buy">COG Buy</a></li>
+        <li><a href="#tokenomics">Tokenomics</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+        <li><a href="#nfts">NFTs</a></li>
+        <li><a href="#pricing">Price card</a></li>
+        <li><a href="#near-bottom">Socials</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <button class="menu-toggle" id="menu-toggle" aria-label="Toggle menu">☰</button>
+</nav>
+    <!-- HERO -->
+    <header id="home" class="hero">
+      <div class="hero-content">
+        <h1>Welcome to <strong>cogni</strong> on BASE<span style="color:var(--accent)"> $COG</span></h1>
+        <p class="lead"><strong>Intelligience meets Blockchain</strong></p>
+
+        <div class="list-container">
+          <h3 style="margin-bottom:8px">The meme coin that clarifies AI</h3>
+          <ul>
+            <li><strong>Meet COGNI</strong> An Intelligience-first crypto platform designed to replace speculation with clarity </li>
+            <li><strong>stake $COG</strong> to unlock access, usbscribe in USDC to activate AI-powered scanners, sentiment analysis, and whale intelligience. </li>
+            <li><strong>Why cogni:</strong> Built for sustainable, long-Term decision making</li>
+          </ul>
+        </div>
+      <!-- Hero NFT box -->
+      <aside class="nft-box float" aria-hidden="true">
+        <img src="c2.jpg" alt="Hero NFT (replace)">
+      </aside>
+    </header>
+
+    <!-- Buy Section -->
+<section id="buy" class="py-24 px-6">
+  <h2 class="text-3xl font-bold mb-4">Buy $COG</h2>
+  <!-- BUY / GET ACCESS SECTION -->
+<section class="relative py-20 px-6 bg-transparent">
+  <div class="max-w-4xl mx-auto">
+
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-semibold text-white">
+        Get Access to Cogni
+      </h2>
+      <p class="text-gray-400 mt-3">
+        Stake for access. Subscribe to activate. Built on Base.
+      </p>
+    </div>
+
+    <!-- Buy Card -->
+    <div class="max-w-xl mx-auto rounded-2xl border border-blue-500/50 bg-white/5 backdrop-blur-xl p-6 shadow-2xl">
+
+      <h3 class="text-blue-400 text-lg font-semibold">
+        How Access Works
+      </h3>
+      <p class="text-sm text-gray-400 mt-1">
+        Two-step activation model
+      </p>
+
+      <div class="my-6 space-y-4 text-sm text-gray-300">
+        <p>
+          <span class="text-white font-medium">1. Buy & Stake $COGNI</span><br />
+          Hold and stake the required amount of $COGNI to unlock your access tier
+          and mint a non-transferable NFT badge.
+        </p>
+
+        <p>
+          <span class="text-white font-medium">2. Activate with USDC</span><br />
+          Subscribe in USDC to activate usage limits, tools, and intelligence
+          features tied to your tier.
+        </p>
+      </div>
+
+      <ul class="space-y-3 text-sm text-gray-300 mt-6">
+        <li>✔ No APY, no emissions — utility only</li>
+        <li>✔ 72-hour cooldown on unstake or tier change</li>
+        <li>✔ Revenue-backed, post-MVP liquidity strategy</li>
+        <li>✔ Web + Telegram bot access</li>
+      </ul>
+
+      <!-- CTA -->
+      <div class="mt-8">
+        <button class="w-full rounded-xl bg-blue-500 py-3 font-semibold text-black hover:bg-blue-400 transition">
+          Buy $COGNI & Get Access
+        </button>
+      </div>
+
+      <p class="text-center text-xs text-gray-500 mt-4">
+        Access requires holding the required stake. Base network only.
+      </p>
+
+    </div>
+
+  </div>
+</section>
+    <!-- Tokenomics -->
+<section id="tokenomics" class="py-24 px-6">
+   <h2 class="text-3xl font-bold mb-2">COGNI Tokenomics</h2>
+  <div class="max-w-6xl mx-auto bg-white/5 backdrop-blur-xl rounded-3xl p-8 md:p-12 shadow-xl">
+    <p class="text-gray-400 mb-10">Total Supply: 1,000,000,000</p>
+    <div class="grid md:grid-cols-2 gap-10 items-center">
+      <div>
+        <canvas id="tokenChart" width="300" height="300"></canvas>
+      </div>
+      <div class="space-y-4 text-sm">
+        <div class="flex items-center gap-3"><span class="w-3 h-3 bg-teal-400 rounded"></span>20% — Permanently inaccessible</div>
+        <div class="flex items-center gap-3"><span class="w-3 h-3 bg-blue-400 rounded"></span>20% — Staking & ecosystem fund</div>
+        <div class="flex items-center gap-3"><span class="w-3 h-3 bg-green-400 rounded"></span>25% — Team (vested)</div> <div class="flex items-center gap-3"><span class="w-3 h-3 bg-yellow-400 rounded"></span>15% — Marketing & partnerships</div>
+        <div class="flex items-center gap-3"><span class="w-3 h-3 bg-purple-400 rounded"></span>10% — Airdrops & community</div>
+        <div class="flex items-center gap-3"><span class="w-3 h-3 bg-pink-400 rounded"></span>10% — Liquidity pool</div>
+      </div>
+    </div>
+    <div class="mt-10 text-gray-400 text-sm">Effective circulating supply: <span class="text-white font-semibold">800,000,000</span></div>
+  </div>
+</section>
+   <!-- NFT Section -->
+<section id="nfts" class="py-24 px-6">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl font-bold mb-12 text-white text-center">NFT Intelligence Tiers</h2>
+    <div class="grid md:grid-cols-3 gap-6 mb-12">
+      <div class="nft-card"><img src="c1.jpg" alt="Tier I NFT"></div>
+      <div class="nft-card"><img src="c2.jpg" alt="Tier II NFT"></div>
+      <div class="nft-card"><img src="c3.jpg" alt="Tier III NFT"></div>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6 text-white">
+      <div class="section-card">
+        <h3 class="font-semibold mb-2 text-cyan-400">Tier I Signal</h3>
+        <p class="text-gray-300 text-sm mb-4">Entry-level access to COGNI intelligence.</p>
+        <ul class="text-gray-400 text-sm space-y-2 list-disc list-inside">
+          <li>Basic AI sentiment insights</li>
+          <li>Limited safety scans</li>
+           <li>Community dashboards</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <h3 class="font-semibold mb-2 text-cyan-400">Tier II Insight</h3>
+        <p class="text-gray-300 text-sm mb-4">Enhanced intelligence and priority data.</p>
+        <ul class="text-gray-400 text-sm space-y-2 list-disc list-inside">
+          <li>Advanced sentiment analysis</li>
+          <li>Expanded scan limits</li>
+          <li>Early feature access</li>
+        </ul>
+      </div>
+      <div class="section-card">
+        <h3 class="font-semibold mb-2 text-cyan-400">Tier III Cognition</h3>
+        <p class="text-gray-300 text-sm mb-4">Full-spectrum intelligence tooling.</p>
+        <ul class="text-gray-400 text-sm space-y-2 list-disc list-inside">
+          <li>Whale alerts & trend prediction</li>
+          <li>Tier-gated AI tools</li>
+          <li>Governance influence</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section> 
+    <!-- ROADMAP -->
+    <section id="roadmap" class="roadmap-wrap">
+      <div class="waves" aria-hidden="true">
+        <div style="position:absolute;bottom:0;left:0;width:100%;overflow:hidden;height:80px;">
+          <div style="display:flex; width:200%; animation: translateX 14s linear infinite;">
+            <svg viewBox="0 0 1200 80" preserveAspectRatio="xMinYMin slice" style="width:1200px;height:80px;">
+              <path d="M0,40 C150,10 300,70 450,40 C600,10 750,70 900,40 C1050,10 1200,70 1350,40 L1350,80 L0,80 Z" fill="#002f3a" opacity="0.65"></path>
+            </svg>
+            <svg viewBox="0 0 1200 80" preserveAspectRatio="xMinYMin slice" style="width:1200px;height:80px;">
+              <path d="M0,40 C150,10 300,70 450,40 C600,10 750,70 900,40 C1050,10 1200,70 1350,40 L1350,80 L0,80 Z" fill="#01363f" opacity="0.5"></path>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap-content">
+        <h2 style="margin-bottom:12px">Roadmap</h2>
+
+        <!-- simple curvy road -->
+        <svg class="roadmap-svg" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+          <defs>
+            <linearGradient id="roadG" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#122a33"/><stop offset="1" stop-color="#05202a"/>
+            </linearGradient>
+          </defs>
+
+          <!-- road -->
+          <path d="M30,220 C200,180 300,60 480,100 C660,140 780,60 980,90 C1100,110 1170,90 1170,90"
+                stroke="url(#roadG)" stroke-width="36" stroke-linecap="round" fill="none" opacity="0.98"></path>
+
+          <!-- dashed center -->
+          <path d="M30,220 C200,180 300,60 480,100 C660,140 780,60 980,90 C1100,110 1170,90 1170,90"
+                stroke="#9feeff" stroke-width="6" stroke-dasharray="16 24" stroke-linecap="round" fill="none" opacity="0.95"></path>
+
+          <!-- markers -->
+          <circle class="marker" cx="120" cy="205" r="12"></circle>
+          <circle class="marker" cx="420" cy="115" r="12"></circle>
+          <circle class="marker" cx="690" cy="135" r="12"></circle>
+          <circle class="marker" cx="980" cy="95" r="12"></circle>
+        </svg>
+
+        <!-- Roadmap details below for responsive layout -->
+        <div style="margin-top:14px;">
+          <div class="list-container">
+            <h3 class="font-semibold mb-2">Phase 1 Foundation</h3>
+      <ul class="text-gray-400 text-sm list-disc pl-6">
+        <li>Tokenomics, NFT tiers</li>
+        <li>Staking (test)</li>
+        <li>Early community building</li>
+      </ul>
+    </div>
+    <div class="section-card">
+      <h3 class="font-semibold mb-2">Phase 2 Utility Activation</h3>
+      <ul class="text-gray-400 text-sm list-disc pl-6">
+        <li>Staking live</li>
+        <li>AI sentiment beta</li>
+        <li>Dashboard MVP</li>
+      </ul>
+    </div>
+    <div class="section-card">
+      <h3 class="font-semibold mb-2">Phase 3 Expansion</h3>
+      <ul class="text-gray-400 text-sm list-disc pl-6">
+        <li>Advanced AI scans</li>
+        <li>Whale alerts</li>
+        <li>Tier-gated features</li>
+      </ul>
+    </div>
+    <div class="section-card">
+      <h3 class="font-semibold mb-2">Phase 4 Scale</h3>
+      <ul class="text-gray-400 text-sm list-disc pl-6">
+        <li>UI polish</li>
+        <li>Automation</li>
+        <li>Ecosystem integrations</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<canvas id="aiNodes" style="
+  position:fixed;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+"></canvas>
+
+    <!-- Whitepaper -->
+    <section id="whitepaper" style="padding:18px;">
+      <h2>Whitepaper</h2>
+      <!-- COGNI ACCESS CARD -->
+<div class="my-16 max-w-xl mx-auto rounded-2xl border border-orange-400/50 bg-white/5 backdrop-blur-xl p-6 shadow-2xl">
+
+  <h3 class="text-orange-400 text-lg font-semibold">
+    Cogni white paper
+  </h3>
+  <p class="text-sm text-gray-400 mt-1">
+    Utility-gated SaaS on Base
+  </p>
+
+  <div class="my-6">
+    <p class="text-sm text-gray-300 leading-relaxed">
+      Cogni combines <span class="text-white font-medium">token staking</span> and a
+      <span class="text-white font-medium">USDC subscription</span> to unlock
+      intelligence-first crypto tools. Staking determines tier eligibility and
+      mints a non-transferable NFT badge. Subscriptions activate usage.
+    </p>
+  </div>
+
+  <ul class="space-y-3 text-sm text-gray-300">
+    <li>✔ Stake $COGNI → unlock tier + NFT badge</li>
+    <li>✔ Subscribe in USDC → activate tools & limits</li>
+    <li>✔ Higher tiers unlock higher limits & priority access</li>
+    <li>✔ 72-hour cooldown on unstake or tier change</li>
+    <li>✔ No APY, no emissions — pure utility gating</li>
+  </ul>
+
+  <div class="mt-6 rounded-xl bg-black/30 p-4 text-sm text-gray-400">
+    <p>
+      <span class="text-white font-medium">Network:</span> Base<br />
+      <span class="text-white font-medium">Revenue:</span> USDC SaaS subscriptions<br />
+      <span class="text-white font-medium">Design Goal:</span> Sustainable, profitable growth
+      backed by real product adoption
+    </p>
+  </div>
+
+</div>
+    </section>
+    <!-- PRICING SECTION -->
+<section id="pricing" class="relative py-20 px-6 bg-transparent">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Header -->
+    <div class="text-center mb-14">
+      <h2 class="text-3xl md:text-4xl font-semibold text-white">
+        Unlock the Power of Market Intelligence
+      </h2>
+      <p class="text-gray-400 mt-3">
+        Choose your edge. Stake smart. Trade degen.
+      </p>
+    </div>
+
+    <!-- Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+      <!-- USER TIER -->
+      <div class="rounded-2xl border border-emerald-400/40 bg-white/5 backdrop-blur-xl p-6 shadow-xl">
+        <h3 class="text-emerald-400 text-lg font-semibold">User Tier</h3>
+        <p class="text-sm text-gray-400 mt-1">Entry-level degens</p>
+
+        <div class="my-6">
+          <span class="text-5xl font-bold text-white">$7</span>
+          <span class="text-gray-400">/month</span>
+        </div>
+
+        <ul class="space-y-3 text-sm text-gray-300">
+          <li>✔ Basic whale alerts</li>
+          <li>✔ Light AI responses</li>
+          <li>✔ Web + Telegram access</li>
+        </ul>
+
+        <button class="mt-8 w-full rounded-xl bg-emerald-500 py-3 font-semibold text-black hover:bg-emerald-400 transition">
+          Get Started
+        </button>
+      </div>
+
+      <!-- ANALYST TIER -->
+      <div class="relative rounded-2xl border border-orange-400/60 bg-white/10 backdrop-blur-xl p-6 shadow-2xl scale-105">
+        <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-orange-400 px-4 py-1 text-xs font-semibold text-black">
+          CORE VALUE
+        </span>
+
+        <h3 class="text-orange-400 text-lg font-semibold">Analyst Tier</h3>
+        <p class="text-sm text-gray-300 mt-1">Smart degens live here</p>
+
+        <div class="my-6">
+          <span class="text-5xl font-bold text-white">$19</span>
+          <span class="text-gray-300">/month</span>
+        </div>
+
+        <ul class="space-y-3 text-sm text-gray-200">
+          <li>✔ Unlimited sentiment analysis</li>
+          <li>✔ Advanced whale alerts</li>
+          <li>✔ Smart-degen AI mode</li>
+          <li>✔ Web + bot access</li>
+        </ul>
+
+        <button class="mt-8 w-full rounded-xl bg-orange-400 py-3 font-semibold text-black hover:bg-orange-300 transition">
+          Subscribe Now
+        </button>
+      </div>
+
+      <!-- ARCHITECT TIER -->
+      <div class="rounded-2xl border border-blue-500/50 bg-white/5 backdrop-blur-xl p-6 shadow-xl">
+        <h3 class="text-blue-400 text-lg font-semibold">Architect Tier</h3>
+        <p class="text-sm text-gray-400 mt-1">Power-user degens</p>
+
+        <div class="my-6">
+          <span class="text-5xl font-bold text-white">$59</span>
+          <span class="text-gray-400">/month</span>
+        </div>
+
+        <ul class="space-y-3 text-sm text-gray-300">
+          <li>✔ Unlimited usage</li>
+          <li>✔ Priority processing</li>
+          <li>✔ Early feature access</li>
+          <li>✔ Full degen AI mode</li>
+        </ul>
+
+        <button class="mt-8 w-full rounded-xl bg-blue-500 py-3 font-semibold text-black hover:bg-blue-400 transition">
+          Go Ultimate
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Footer note -->
+    <p class="text-center text-xs text-gray-500 mt-10">
+      Access requires holding the required stake. Degens only.
+    </p>
+
+  </div>
+</section>
+    <!-- near-bottom -->
+    <section id="near-bottom" style="padding:18px;">
+      <div class="list-container">
+        <h3>CONTACT COGNI</h3>
+        <p class="text-gray-400 mb-6">For partnerships, integrations, or inquiries.</p>
+    <ul class="text-gray-400 space-y-2">
+        <ul>
+          <li>📩 Telegram:<a href="http://t.me/CogniCommunity" target="_blank">CogniCommunity</a></li>
+          <li>🐦 Twitter (x):<a href="https://x.com/COGNIBASE" target="_blank">COGNIBASE</a></li>
+        </ul>
+      </div>
+    </section>
+    <!-- Bubble Zone Before Footer -->
+<section id="water-zone">
+  <div id="bubble-layer"></div>
+  <div id="underwater-fog"></div>
+</section>
+
+    <footer>© <strong>COGNI</strong> | ON BASE</footer>
+  </div>
+
+  
+  <script>
+    /* Chart */
+const ctx = document.getElementById('tokenChart');
+new Chart(ctx,{
+  type:'pie',
+  data:{
+    labels:['Burned','Staking & Ecosystem','Team','Marketing','Airdrops','Liquidity'],
+    datasets:[{
+      data:[20,20,25,15,10,10],
+      backgroundColor:['#2dd4bf','#60a5fa','#4ade80','#facc15','#c084fc','#f472b6'],
+      borderWidth:0
+    }]
+  },
+  options:{plugins:{legend:{display:false}}}
+});
+/* AI Nodes in Hero */
+const canvas = document.getElementById('aiNodes');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const ctx2 = canvas.getContext('2d');
+const nodes = [];
+for(let i=0;i<50;i++){nodes.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*3+1,speed:Math.random()*0.5+0.2});}
+function animateNodes(){
+  ctx2.clearRect(0,0,canvas.width,canvas.height);
+  nodes.forEach(n=>{
+    ctx2.beginPath();
+    ctx2.arc(n.x,n.y,n.r,0,Math.PI*2);
+    ctx2.fillStyle='rgba(0,234,255,0.6)';
+    ctx2.fill();
+    n.y-=n.speed;
+    if(n.y<-10){n.y=canvas.height+10;n.x=Math.random()*canvas.width;}
+  });
+  requestAnimationFrame(animateNodes);
+}
+animateNodes();
+    /* Floating Cubes */
+const cubelayer = document.getElementById('cubelayer');
+function spawnCube(){
+  const c = document.createElement('div');
+  c.classList.add('cube');
+  c.style.left=Math.random()*100+'vw';
+  c.style.top=window.innerHeight+'px';
+  const size=10+Math.random()*20;
+  c.style.width=size+'px';
+  c.style.height=size+'px';
+  c.style.animationDuration=(6+Math.random()*6)+'s';
+  cubelayer.appendChild(c);
+  setTimeout(()=>c.remove(),12000);
+}
+setInterval(spawnCube,300);
+for(let i=0;i<20;i++){spawnCube();}
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+
+    /* small helpers */
+    function buycog(){
+      const widget = document.getElementById('buy-widget');
+      if(widget && widget.innerHTML.trim().length>0){
+        alert("Open your buy widget or implement web3 flow here.");
+      } else {
+        alert("Buy COGNI — add your buy widget code into the #buy-widget container.");
+      }
+    }
+
+    // Smooth scroll anchors
+    document.querySelectorAll('a[href^="#"]').forEach(a=>{
+      a.addEventListener('click', function(e){
+        const href = this.getAttribute('href');
+        const target = document.querySelector(href);
+        if(target){
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+          // if nav was open (mobile), close it after click
+          document.getElementById('site-nav').classList.remove('nav-open');
+        }
+      });
+    });
+
+    // Mobile menu toggle
+    const menuToggle = document.getElementById('menu-toggle');
+    const siteNav = document.getElementById('site-nav');
+    if(menuToggle){
+      menuToggle.addEventListener('click', ()=>{
+        siteNav.classList.toggle('nav-open');
+      });
+    }
+
+    // Close mobile menu on resize to desktop
+    window.addEventListener('resize', ()=>{
+      if(window.innerWidth > 880){
+        siteNav.classList.remove('nav-open');
+      }
+    });
+  </script>
+
+</script>
+
+</body>
+</html>
