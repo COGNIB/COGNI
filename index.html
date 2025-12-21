@@ -23,12 +23,16 @@
       background-image: url("c9.jpg");
       background-size: cover;
       background-position: center;
-      background-attachment: fixed;
+      background-attachment: scroll;
       color: #e6faff;
       font-family: 'Inter', sans-serif;
       overflow-x: hidden;
     }
-
+    @media (min-width:768px) {
+      body{
+        background-attachment: fixed;
+      }
+    }
     .glass-card {
       background: var(--card-bg);
       backdrop-filter: blur(14px);
@@ -66,10 +70,79 @@
     @keyframes floatY { 0%,100% { transform:translateY(0) } 50% { transform:translateY(-15px) } }
     
     .nft-card:hover { transform: translateY(-8px); box-shadow: 0 0 20px rgba(0, 234, 255, 0.3); }
+    /* Container for the cubes */
+.cube-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Individual Cube Styling */
+.cube {
+  position: absolute;
+  background: linear-gradient(135deg, #00eaff, #ff4aff);
+  opacity: 0.4;
+  border-radius: 4px;
+  box-shadow: 0 0 15px rgba(0, 234, 255, 0.3);
+  animation: floatCube linear infinite;
+}
+
+@keyframes floatCube {
+  0% { 
+    transform: translateY(0) rotateX(45deg) rotateY(45deg); 
+    opacity: 0; 
+  }
+  10% { opacity: 0.4; }
+  90% { opacity: 0.4; }
+  100% { 
+    transform: translateY(-110vh) rotateX(360deg) rotateY(360deg); 
+    opacity: 0; 
+  }
+}
+/* Crypto icons */
+.Team-icons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin: 20px auto;
+}
+
+.Team-icons div {
+  text-align: center;
+  background: radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.18), #111827);
+  border-radius: 16px;
+  padding: 12px 10px;
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.15);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.Team-icons div:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 24px rgba(0, 240, 255, 0.35);
+}
+
+.Team-icons img {
+  width: 60px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  transition: transform 0.25s;
+  filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.8));
+}
+
+.Team-icons p {
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: bold;
+}
   </style>
 </head>
 <body>
-
+<div class="cube-layer" id="cubelayer"></div>
 <canvas id="aiNodes"></canvas>
 
 <nav class="px-6 py-4">
@@ -190,8 +263,23 @@
 </section>
 
 <section id="roadmap" class="px-6 py-16">
+  <h2 class="text-center text-3xl font-black mb-12 uppercase">Roadmap</h2>
+    
+  <div class="relative w-full py-10">
+  <svg class="w-full h-auto drop-shadow-[0_0_10px_rgba(0,234,255,0.4)]" viewBox="0 0 1200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M30,220 C200,180 300,60 480,100 C660,140 780,60 980,90 C1100,110 1170,90 1170,90" 
+          stroke="rgba(0, 234, 255, 0.1)" stroke-width="40" stroke-linecap="round"/>
+    
+    <path d="M30,220 C200,180 300,60 480,100 C660,140 780,60 980,90 C1100,110 1170,90 1170,90" 
+          stroke="#00eaff" stroke-width="4" stroke-dasharray="12 18" stroke-linecap="round"/>
+
+    <circle cx="120" cy="205" r="8" fill="#00eaff" class="animate-pulse" />
+    <circle cx="420" cy="115" r="8" fill="#00eaff" />
+    <circle cx="690" cy="135" r="8" fill="#00eaff" />
+    <circle cx="980" cy="95" r="8" fill="#00eaff" />
+  </svg>
+</div>
   <div class="max-w-4xl mx-auto">
-    <h2 class="text-center text-3xl font-black mb-12 uppercase">Roadmap</h2>
     
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div class="glass-card p-6 border-l-2 border-cyan-400">
@@ -278,8 +366,8 @@
 </section>
 
   <div class="max-w-6xl mx-auto">
-    <h2 class="text-center text-3xl font-black mb-12 uppercase italic">NFT Intelligence Tiers</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <h2 class="text-center text-3xl font-black mb-12 uppercase italic">TEAM BEHIND COGNI</h2>
+    <div class="Team-icons">
       <div class="glass-card p-6 nft-card transition-all">
         <img src="pukka.jpg" alt="Tier 1" class="rounded-lg mb-4">
         <h3 class="text-emerald-400 font-bold text-xl">PUKKA</h3>
@@ -344,7 +432,27 @@
     },
     options: { plugins: { legend: { display: false } }, cutout: '75%' }
   });
+const cubelayer = document.getElementById('cubelayer');
 
+function createCube() {
+  const c = document.createElement('div');
+  c.className = 'cube';
+  const size = Math.random() * 20 + 10; // Random size between 10-30px
+  c.style.width = size + 'px';
+  c.style.height = size + 'px';
+  c.style.left = Math.random() * 100 + 'vw';
+  c.style.top = '110vh'; // Start below screen
+  c.style.animationDuration = (Math.random() * 8 + 6) + 's';
+  cubelayer.appendChild(c);
+  
+  // Cleanup
+  setTimeout(() => c.remove(), 14000);
+}
+
+// Spawn cubes regularly
+setInterval(createCube, 700);
+// Initial burst
+for(let i=0; i<8; i++) createCube();
   // AI Particle Background
   const canvas = document.getElementById('aiNodes');
   const ctx2 = canvas.getContext('2d');
