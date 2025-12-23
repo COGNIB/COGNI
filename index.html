@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.5/ethers.umd.min.js"></script>
   <style>
     :root {
       --accent: #00eaff;
@@ -139,6 +139,62 @@
   font-size: 14px;
   font-weight: bold;
 }
+:root {
+    --cyan: #00eaff;
+    --base-blue: #0052ff;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+}
+
+.terminal-title { font-size: 1.875rem; font-weight: 900; font-style: italic; color: var(--cyan); text-transform: uppercase; }
+.network-label { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #6b7280; text-transform: uppercase; }
+
+.connect-button {
+    padding: 0.5rem 1.5rem;
+    background: var(--base-blue);
+    color: white;
+    font-weight: bold;
+    border-radius: 9999px;
+    transition: all 0.3s;
+}
+
+.tab-btn { width: 100%; text-align: left; padding: 0.75rem; border-radius: 0.5rem; font-weight: bold; transition: 0.3s; }
+.tab-btn.active { background: rgba(0, 234, 255, 0.1); color: var(--cyan); }
+.tab-btn.inactive { color: #6b7280; }
+
+.price-display { font-size: 1.5rem; font-weight: 900; font-family: 'JetBrains Mono'; color: white; }
+.stat-label { font-size: 9px; font-weight: bold; text-transform: uppercase; }
+.stat-value { font-size: 0.75rem; font-weight: bold; font-family: 'JetBrains Mono'; }
+
+.chart-container { height: 550px; overflow: hidden; width: 100%; }
+.chart-container iframe { width: 100%; height: 100%; border: none; }
+
+.stake-input {
+    width: 100%;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.action-button {
+    width: 100%;
+    padding: 1rem;
+    background: var(--cyan);
+    color: black;
+    font-weight: 900;
+    border-radius: 0.75rem;
+    text-transform: uppercase;
+}
+
+.hidden { display: none; }
   </style>
 </head>
 <body>
@@ -390,7 +446,85 @@
     </div>
   </div>
 </section>
+      <div class="dashboard-container p-4 md:p-8">
+    <header class="max-w-7xl mx-auto flex justify-between items-center mb-8">
+        <div>
+            <h1 class="terminal-title">COG <span class="text-white">Terminal</span></h1>
+            <p class="network-label">Network: Base (Mainnet)</p>
+        </div>
+        <button id="connectBtn" onclick="connectWallet()" class="connect-button">
+            Connect Base Wallet
+        </button>
+    </header>
 
+    <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div class="space-y-6">
+            <div class="glass-card p-6">
+                <nav class="space-y-2">
+                    <button onclick="switchTab('market')" class="tab-btn active">Live Chart</button>
+                    <button onclick="switchTab('staking')" class="tab-btn inactive">Staking Portal</button>
+                    <button onclick="switchTab('holders')" class="tab-btn inactive">Holders List</button>
+                </nav>
+            </div>
+
+            <div class="glass-card p-6 border-cyan-500/20">
+                <p class="stat-label text-cyan-400">Live Price (Base)</p>
+                <h2 id="live-price" class="price-display">$0.000000</h2>
+                <div class="mt-4 grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
+                    <div>
+                        <p class="stat-label">MCAP</p>
+                        <p id="live-mcap" class="stat-value">$0.00</p>
+                    </div>
+                    <div>
+                        <p class="stat-label">Vol (24h)</p>
+                        <p id="live-vol" class="stat-value">$0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-3 space-y-6">
+            <div id="tab-market" class="tab-content">
+                <div class="glass-card chart-container">
+                    <iframe id="dex-chart" src="https://dexscreener.com/base/0x9B5E262cF9bb04869ab40b19AF91D2dc85761722?embed=1&theme=dark&trades=0&info=0"></iframe>
+                </div>
+            </div>
+
+            <div id="tab-staking" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-8 border-cyan-500/20">
+                        <h3 class="section-header">Stake Your $COG</h3>
+                        <div class="input-wrapper mb-4">
+                            <input id="stakeAmount" type="number" placeholder="0.00" class="stake-input">
+                            <span class="currency-tag">COG</span>
+                        </div>
+                        <button onclick="executeStake()" class="action-button">Confirm Stake</button>
+                    </div>
+                    <div class="glass-card p-8 bg-blue-500/5">
+                        <h3 class="stat-label text-blue-400 mb-4">Staking Stats</h3>
+                        <div class="flex justify-between items-center border-t border-white/5 pt-4">
+                            <div>
+                                <p id="stakedBalance" class="staked-amount">0.00</p>
+                                <p class="stat-label">Your Staked Tokens</p>
+                            </div>
+                            <button onclick="executeUnstake()" class="unstake-link">Unstake</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-holders" class="tab-content hidden">
+                <div class="glass-card p-8">
+                    <div class="flex justify-between mb-6">
+                        <h3 class="section-header">Top Holders</h3>
+                        <a href="https://basescan.org/token/0x9B5E262cF9bb04869ab40b19AF91D2dc85761722#balances" target="_blank" class="scan-link">View on BaseScan</a>
+                    </div>
+                    <div id="holder-list" class="holder-list-container"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
   <div class="max-w-6xl mx-auto">
     <h2 class="text-center text-3xl font-black mb-12 uppercase italic">TEAM BEHIND COGNI</h2>
     <div class="Team-icons">
@@ -436,66 +570,127 @@
 </footer>
 
 <script>
-  // Hamburger Fix
+  // 1. Hamburger Menu Fix
   const btn = document.getElementById('hamburger');
   const menu = document.getElementById('mobile-menu');
   const links = document.querySelectorAll('.mobile-link');
 
-  btn.addEventListener('click', () => menu.classList.toggle('active'));
+  if(btn) {
+    btn.addEventListener('click', () => menu.classList.toggle('active'));
+  }
   links.forEach(link => link.addEventListener('click', () => menu.classList.remove('active')));
 
-  // Tokenomics Chart
-  const ctx = document.getElementById('tokenChart');
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Burned','Staking','Team','Marketing','Airdrops','Liquidity','Reserve','Treasury'],
-      datasets: [{
-        data: [10, 10, 5, 3, 15, 30,7,20],
-        backgroundColor: ['#2dd4bf','#60a5fa','#4ade80','#facc15','#c084fc','#f472b6','#grey','brown'],
-        borderWidth: 0
-      }]
-    },
-    options: { plugins: { legend: { display: false } }, cutout: '75%' }
-  });
-const cubelayer = document.getElementById('cubelayer');
+  // 2. Tokenomics Doughnut Chart
+  const tokenCtx = document.getElementById('tokenChart');
+  if (tokenCtx) {
+    new Chart(tokenCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Burned','Staking','Team','Marketing','Airdrops','Liquidity','Reserve','Treasury'],
+        datasets: [{
+          data: [10, 10, 5, 3, 15, 30, 7, 20],
+          backgroundColor: ['#2dd4bf','#60a5fa','#4ade80','#facc15','#c084fc','#f472b6','#6b7280','#92400e'],
+          borderWidth: 0
+        }]
+      },
+      options: { plugins: { legend: { display: false } }, cutout: '75%' }
+    });
+  }
 
-function createCube() {
-  const c = document.createElement('div');
-  c.className = 'cube';
-  const size = Math.random() * 20 + 10; // Random size between 10-30px
-  c.style.width = size + 'px';
-  c.style.height = size + 'px';
-  c.style.left = Math.random() * 100 + 'vw';
-  c.style.top = '110vh'; // Start below screen
-  c.style.animationDuration = (Math.random() * 8 + 6) + 's';
-  cubelayer.appendChild(c);
-  
-  // Cleanup
-  setTimeout(() => c.remove(), 14000);
+  // 3. Floating Cubes Logic
+  const cubelayer = document.getElementById('cubelayer');
+  function createCube() {
+    if(!cubelayer) return;
+    const c = document.createElement('div');
+    c.className = 'cube';
+    const size = Math.random() * 20 + 10;
+    c.style.width = size + 'px';
+    c.style.height = size + 'px';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.top = '110vh';
+    c.style.animationDuration = (Math.random() * 8 + 6) + 's';
+    cubelayer.appendChild(c);
+    setTimeout(() => c.remove(), 14000);
+  }
+  setInterval(createCube, 700);
+
+  // 4. AI Particle Background
+  const canvas = document.getElementById('aiNodes');
+  if (canvas) {
+    const ctx2 = canvas.getContext('2d');
+    let particles = [];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize); resize();
+    for(let i=0; i<30; i++) particles.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, s: Math.random()*0.3+0.1});
+    function animate() {
+      ctx2.clearRect(0,0,canvas.width, canvas.height);
+      ctx2.fillStyle = 'rgba(0, 234, 255, 0.2)';
+      particles.forEach(p => {
+        ctx2.beginPath(); ctx2.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx2.fill();
+        p.y -= p.s; if(p.y < -10) p.y = canvas.height + 10;
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+const TOKEN_ADDR = "0x9B5E262cF9bb04869ab40b19AF91D2dc85761722";
+const STAKING_ABI = [
+    "function stake(uint256 amount) public",
+    "function withdraw(uint256 amount) public",
+    "function stakedBalances(address) public view returns (uint256)"
+];
+
+let signer;
+
+async function connectWallet() {
+    if (window.ethereum) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        signer = await provider.getSigner();
+        
+        const btn = document.getElementById('connectBtn');
+        btn.innerText = accounts[0].slice(0, 6) + "..." + accounts[0].slice(-4);
+        btn.style.backgroundColor = "rgba(16, 185, 129, 0.2)";
+        btn.style.color = "#10b981";
+    }
 }
 
-// Spawn cubes regularly
-setInterval(createCube, 700);
-// Initial burst
-for(let i=0; i<8; i++) createCube();
-  // AI Particle Background
-  const canvas = document.getElementById('aiNodes');
-  const ctx2 = canvas.getContext('2d');
-  let particles = [];
-  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-  window.addEventListener('resize', resize); resize();
-  for(let i=0; i<30; i++) particles.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, s: Math.random()*0.3+0.1});
-  function animate() {
-    ctx2.clearRect(0,0,canvas.width, canvas.height);
-    ctx2.fillStyle = 'rgba(0, 234, 255, 0.2)';
-    particles.forEach(p => {
-      ctx2.beginPath(); ctx2.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx2.fill();
-      p.y -= p.s; if(p.y < -10) p.y = canvas.height + 10;
+async function executeStake() {
+    if (!signer) return connectWallet();
+    const amount = document.getElementById('stakeAmount').value;
+    const contract = new ethers.Contract(TOKEN_ADDR, STAKING_ABI, signer);
+    
+    try {
+        const tx = await contract.stake(ethers.parseUnits(amount, 18));
+        await tx.wait();
+        alert("Stake Successful!");
+    } catch (e) { alert("Error: " + e.message); }
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+    document.getElementById(`tab-${tab}`).classList.remove('hidden');
+    
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.classList.add('inactive');
     });
-    requestAnimationFrame(animate);
-  }
-  animate();
-</script>
+    event.currentTarget.classList.add('active');
+}
+
+async function fetchPrice() {
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${TOKEN_ADDR}`);
+    const data = await res.json();
+    if (data.pairs) {
+        const p = data.pairs[0];
+        document.getElementById('live-price').innerText = `$${parseFloat(p.priceUsd).toFixed(8)}`;
+        document.getElementById('live-mcap').innerText = `$${parseInt(p.fdv).toLocaleString()}`;
+        document.getElementById('live-vol').innerText = `$${parseInt(p.volume.h24).toLocaleString()}`;
+    }
+}
+
+setInterval(fetchPrice, 15000);
+fetchPrice();
+  </script>
 </body>
 </html>
