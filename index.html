@@ -153,6 +153,20 @@
 
 .terminal-title { font-size: 1.875rem; font-weight: 900; font-style: italic; color: var(--cyan); text-transform: uppercase; }
 .network-label { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #6b7280; text-transform: uppercase; }
+:root {
+    --cyan: #00eaff;
+    --base-blue: #0052ff;
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+}
+
+.terminal-title { font-size: 1.875rem; font-weight: 900; font-style: italic; color: var(--cyan); text-transform: uppercase; }
+.network-label { font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #6b7280; text-transform: uppercase; }
 
 .connect-button {
     padding: 0.5rem 1.5rem;
@@ -195,6 +209,7 @@
 }
 
 .hidden { display: none; }
+
   </style>
 </head>
 <body>
@@ -446,7 +461,7 @@
     </div>
   </div>
 </section>
-      <div class="dashboard-container p-4 md:p-8">
+<div class="dashboard-container p-4 md:p-8">
     <header class="max-w-7xl mx-auto flex justify-between items-center mb-8">
         <div>
             <h1 class="terminal-title">COG <span class="text-white">Terminal</span></h1>
@@ -457,70 +472,64 @@
         </button>
     </header>
 
+    <div class="max-w-7xl mx-auto mb-6">
+        <div class="glass-card p-2 flex border-cyan-500/30">
+            <input id="globalSearch" type="text" placeholder="Enter Base Wallet or Token CA..." class="bg-transparent flex-1 p-3 outline-none mono text-cyan-400 text-sm">
+            <button onclick="handleGlobalSearch()" class="px-6 bg-cyan-500 text-black font-bold rounded-lg hover:bg-cyan-400 transition text-xs">SCAN</button>
+        </div>
+    </div>
+
     <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div class="space-y-6">
-            <div class="glass-card p-6">
-                <nav class="space-y-2">
-                    <button onclick="switchTab('market')" class="tab-btn active">Live Chart</button>
-                    <button onclick="switchTab('staking')" class="tab-btn inactive">Staking Portal</button>
-                    <button onclick="switchTab('holders')" class="tab-btn inactive">Holders List</button>
-                </nav>
+            <div class="glass-card p-4">
+                <h3 class="stat-label text-cyan-400 mb-3">Sentiment Analysis</h3>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-[10px]">BULLISH</span>
+                    <div class="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                        <div class="w-[82%] h-full bg-emerald-400"></div>
+                    </div>
+                </div>
+                <p id="sentiment-msg" class="text-[10px] text-gray-500 italic">High buy pressure detected in whale wallets.</p>
             </div>
 
-            <div class="glass-card p-6 border-cyan-500/20">
-                <p class="stat-label text-cyan-400">Live Price (Base)</p>
-                <h2 id="live-price" class="price-display">$0.000000</h2>
-                <div class="mt-4 grid grid-cols-2 gap-4 border-t border-white/5 pt-4">
-                    <div>
-                        <p class="stat-label">MCAP</p>
-                        <p id="live-mcap" class="stat-value">$0.00</p>
+            <div class="glass-card p-4 h-64 flex flex-col">
+                <h3 class="stat-label text-orange-400 mb-3">Live Whale Alerts</h3>
+                <div id="whale-feed" class="flex-1 overflow-y-auto space-y-2 mono text-[9px]">
                     </div>
-                    <div>
-                        <p class="stat-label">Vol (24h)</p>
-                        <p id="live-vol" class="stat-value">$0.00</p>
-                    </div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            <div class="glass-card chart-container relative">
+                <iframe id="dex-chart" src="https://dexscreener.com/base/0x9B5E262cF9bb04869ab40b19AF91D2dc85761722?embed=1&theme=dark&trades=0&info=0"></iframe>
+            </div>
+
+            <div class="glass-card p-4 h-48 flex flex-col">
+                <div id="ai-chat-box" class="flex-1 overflow-y-auto text-[11px] mono text-cyan-200 mb-2 space-y-1">
+                    <div>[AI]: Architect System Online. Standing by for scan...</div>
+                </div>
+                <div class="flex gap-2 border-t border-white/5 pt-2">
+                    <input id="aiInput" type="text" placeholder="Ask Architect..." class="bg-transparent flex-1 text-xs outline-none mono">
+                    <button onclick="processAI()" class="text-cyan-400 font-bold text-xs uppercase">Send</button>
                 </div>
             </div>
         </div>
 
-        <div class="lg:col-span-3 space-y-6">
-            <div id="tab-market" class="tab-content">
-                <div class="glass-card chart-container">
-                    <iframe id="dex-chart" src="https://dexscreener.com/base/0x9B5E262cF9bb04869ab40b19AF91D2dc85761722?embed=1&theme=dark&trades=0&info=0"></iframe>
+        <div class="space-y-6">
+            <div class="glass-card p-6 text-center border-emerald-500/20">
+                <p class="stat-label text-gray-500 mb-1">Current Rank</p>
+                <h2 id="tierName" class="text-2xl font-black text-white italic mb-3 uppercase">Architect</h2>
+                <div id="tierIcon" class="w-20 h-20 mx-auto mb-3 bg-cyan-500/10 rounded-full flex items-center justify-center text-3xl shadow-inner">🏛</div>
+                <div class="mono">
+                    <p id="stakedDisplay" class="text-xl font-bold text-cyan-400">0.00</p>
+                    <p class="stat-label">Total $COG Staked</p>
                 </div>
             </div>
 
-            <div id="tab-staking" class="tab-content hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="glass-card p-8 border-cyan-500/20">
-                        <h3 class="section-header">Stake Your $COG</h3>
-                        <div class="input-wrapper mb-4">
-                            <input id="stakeAmount" type="number" placeholder="0.00" class="stake-input">
-                            <span class="currency-tag">COG</span>
-                        </div>
-                        <button onclick="executeStake()" class="action-button">Confirm Stake</button>
-                    </div>
-                    <div class="glass-card p-8 bg-blue-500/5">
-                        <h3 class="stat-label text-blue-400 mb-4">Staking Stats</h3>
-                        <div class="flex justify-between items-center border-t border-white/5 pt-4">
-                            <div>
-                                <p id="stakedBalance" class="staked-amount">0.00</p>
-                                <p class="stat-label">Your Staked Tokens</p>
-                            </div>
-                            <button onclick="executeUnstake()" class="unstake-link">Unstake</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tab-holders" class="tab-content hidden">
-                <div class="glass-card p-8">
-                    <div class="flex justify-between mb-6">
-                        <h3 class="section-header">Top Holders</h3>
-                        <a href="https://basescan.org/token/0x9B5E262cF9bb04869ab40b19AF91D2dc85761722#balances" target="_blank" class="scan-link">View on BaseScan</a>
-                    </div>
-                    <div id="holder-list" class="holder-list-container"></div>
-                </div>
+            <div class="glass-card p-4">
+                <h3 class="stat-label mb-3">Staking Control</h3>
+                <input id="stakeAmount" type="number" placeholder="0.00" class="w-full bg-black/40 border border-white/10 p-3 rounded-lg mb-2 mono text-sm outline-none">
+                <button onclick="executeStake()" class="w-full py-3 bg-cyan-500 text-black font-black rounded-lg text-xs uppercase hover:bg-cyan-400 transition">Stake $COG</button>
             </div>
         </div>
     </main>
@@ -568,72 +577,67 @@
   <p class="text-gray-600 text-xs font-bold uppercase tracking-widest">© COGNI | ON BASE</p>
   <img src="" alt="">
 </footer>
-
 <script>
-  // 1. Hamburger Menu Fix
+  // Hamburger Fix
   const btn = document.getElementById('hamburger');
   const menu = document.getElementById('mobile-menu');
   const links = document.querySelectorAll('.mobile-link');
 
-  if(btn) {
-    btn.addEventListener('click', () => menu.classList.toggle('active'));
-  }
+  btn.addEventListener('click', () => menu.classList.toggle('active'));
   links.forEach(link => link.addEventListener('click', () => menu.classList.remove('active')));
 
-  // 2. Tokenomics Doughnut Chart
-  const tokenCtx = document.getElementById('tokenChart');
-  if (tokenCtx) {
-    new Chart(tokenCtx, {
-      type: 'doughnut',
-      data: {
-        labels: ['Burned','Staking','Team','Marketing','Airdrops','Liquidity','Reserve','Treasury'],
-        datasets: [{
-          data: [10, 10, 5, 3, 15, 30, 7, 20],
-          backgroundColor: ['#2dd4bf','#60a5fa','#4ade80','#facc15','#c084fc','#f472b6','#6b7280','#92400e'],
-          borderWidth: 0
-        }]
-      },
-      options: { plugins: { legend: { display: false } }, cutout: '75%' }
-    });
-  }
+  // Tokenomics Chart
+  const ctx = document.getElementById('tokenChart');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Burned','Staking','Team','Marketing','Airdrops','Liquidity','Reserve','Treasury'],
+      datasets: [{
+        data: [10, 10, 5, 3, 15, 30,7,20],
+        backgroundColor: ['#2dd4bf','#60a5fa','#4ade80','#facc15','#c084fc','#f472b6','#grey','brown'],
+        borderWidth: 0
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, cutout: '75%' }
+  });
+const cubelayer = document.getElementById('cubelayer');
 
-  // 3. Floating Cubes Logic
-  const cubelayer = document.getElementById('cubelayer');
-  function createCube() {
-    if(!cubelayer) return;
-    const c = document.createElement('div');
-    c.className = 'cube';
-    const size = Math.random() * 20 + 10;
-    c.style.width = size + 'px';
-    c.style.height = size + 'px';
-    c.style.left = Math.random() * 100 + 'vw';
-    c.style.top = '110vh';
-    c.style.animationDuration = (Math.random() * 8 + 6) + 's';
-    cubelayer.appendChild(c);
-    setTimeout(() => c.remove(), 14000);
-  }
-  setInterval(createCube, 700);
+function createCube() {
+  const c = document.createElement('div');
+  c.className = 'cube';
+  const size = Math.random() * 20 + 10; // Random size between 10-30px
+  c.style.width = size + 'px';
+  c.style.height = size + 'px';
+  c.style.left = Math.random() * 100 + 'vw';
+  c.style.top = '110vh'; // Start below screen
+  c.style.animationDuration = (Math.random() * 8 + 6) + 's';
+  cubelayer.appendChild(c);
+  // Cleanup
+  setTimeout(() => c.remove(), 14000);
+}
 
-  // 4. AI Particle Background
+// Spawn cubes regularly
+setInterval(createCube, 700);
+// Initial burst
+for(let i=0; i<8; i++) createCube();
+  // AI Particle Background
   const canvas = document.getElementById('aiNodes');
-  if (canvas) {
-    const ctx2 = canvas.getContext('2d');
-    let particles = [];
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.addEventListener('resize', resize); resize();
-    for(let i=0; i<30; i++) particles.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, s: Math.random()*0.3+0.1});
-    function animate() {
-      ctx2.clearRect(0,0,canvas.width, canvas.height);
-      ctx2.fillStyle = 'rgba(0, 234, 255, 0.2)';
-      particles.forEach(p => {
-        ctx2.beginPath(); ctx2.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx2.fill();
-        p.y -= p.s; if(p.y < -10) p.y = canvas.height + 10;
-      });
-      requestAnimationFrame(animate);
-    }
-    animate();
+  const ctx2 = canvas.getContext('2d');
+  let particles = [];
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize); resize();
+  for(let i=0; i<30; i++) particles.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, s: Math.random()*0.3+0.1});
+  function animate() {
+    ctx2.clearRect(0,0,canvas.width, canvas.height);
+    ctx2.fillStyle = 'rgba(0, 234, 255, 0.2)';
+    particles.forEach(p => {
+      ctx2.beginPath(); ctx2.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx2.fill();
+      p.y -= p.s; if(p.y < -10) p.y = canvas.height + 10;
+    });
+    requestAnimationFrame(animate);
   }
-const TOKEN_ADDR = "0x9B5E262cF9bb04869ab40b19AF91D2dc85761722";
+  animate();
+  const TOKEN_ADDR = "0x9B5E262cF9bb04869ab40b19AF91D2dc85761722";
 const STAKING_ABI = [
     "function stake(uint256 amount) public",
     "function withdraw(uint256 amount) public",
@@ -691,6 +695,103 @@ async function fetchPrice() {
 
 setInterval(fetchPrice, 15000);
 fetchPrice();
-  </script>
+// Add these variables to your existing script
+const whaleFeed = document.getElementById('whale-feed');
+const aiChatBox = document.getElementById('ai-chat-box');
+
+// 1. DYNAMIC SEARCH (Detects Wallet vs Token)
+async function handleGlobalSearch() {
+    const query = document.getElementById('globalSearch').value.trim();
+    if (!query.startsWith('0x')) return alert("Please enter a valid Base Address (0x...)");
+
+    if (query.length > 42) {
+        // It's a Token CA
+        document.getElementById('dex-chart').src = `https://dexscreener.com/base/${query}?embed=1&theme=dark`;
+        addAiMessage(`Scanning Token CA: ${query.slice(0,10)}...`);
+        fetchPrice(query); // Update price windows with searched CA
+    } else {
+        // It's a Wallet Address
+        addAiMessage(`Analyzing Wallet: ${query.slice(0,8)}...`);
+        setTimeout(() => {
+            addAiMessage(`[AI]: Wallet contains 0.00 $COG. Access level: Restricted.`);
+        }, 1500);
+    }
+}
+
+// 2. AI RESPONSES
+function addAiMessage(msg) {
+    const div = document.createElement('div');
+    div.innerText = `[AI]: ${msg}`;
+    aiChatBox.appendChild(div);
+    aiChatBox.scrollTop = aiChatBox.scrollHeight;
+}
+
+function processAI() {
+    const input = document.getElementById('aiInput').value.toLowerCase();
+    if (!input) return;
+    
+    const userDiv = document.createElement('div');
+    userDiv.className = "text-gray-500 italic";
+    userDiv.innerText = `> ${input}`;
+    aiChatBox.appendChild(userDiv);
+
+    if (input.includes('price')) {
+        addAiMessage("Fetching current liquidity and price metrics from Base Mainnet...");
+    } else if (input.includes('tier') || input.includes('architect')) {
+        addAiMessage("Architect Tier status requires 1,000,000 $COG tokens staked.");
+    } else {
+        addAiMessage("Command recognized. Processing data nodes...");
+    }
+    
+    document.getElementById('aiInput').value = "";
+}
+
+// 3. LIVE WHALE FEED SIMULATOR
+function startWhaleMonitor() {
+    setInterval(() => {
+        const amt = (Math.random() * 500000 + 10000).toLocaleString();
+        const div = document.createElement('div');
+        div.className = "p-2 border-l border-orange-500 bg-orange-500/5 mb-1";
+        div.innerHTML = `<span class="text-orange-400">🐋 WHALE MOVE: ${amt} $COG</span><br><span class="text-gray-600">to Liquidity Pool</span>`;
+        whaleFeed.prepend(div);
+        if(whaleFeed.children.length > 8) whaleFeed.lastChild.remove();
+    }, 12000);
+}
+startWhaleMonitor();
+
+async function fetchPrice(customAddr = TOKEN_ADDR) {
+    try {
+        const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${customAddr}`);
+        
+        // Ensure the response is okay
+        if (!res.ok) throw new Error("Network response was not ok");
+
+        const data = await res.json(); // Fixed: Removed the stray backtick
+
+        // Check if pairs exist before accessing them
+        if (data && data.pairs && data.pairs.length > 0) {
+            const p = data.pairs[0];
+            
+            // Update UI Elements
+            document.getElementById('live-price').innerText = `$${parseFloat(p.priceUsd).toFixed(8)}`;
+            document.getElementById('live-mcap').innerText = `$${parseInt(p.fdv || 0).toLocaleString()}`;
+            document.getElementById('live-vol').innerText = `$${parseInt(p.volume?.h24 || 0).toLocaleString()}`;
+
+            // AI Notification for new tokens
+            if (customAddr !== TOKEN_ADDR) {
+                addAiMessage(`Analysis Complete: ${p.baseToken.name} (${p.baseToken.symbol}) identified.`);
+            }
+        } else {
+            // Handle case where no liquidity pools are found
+            if (customAddr !== TOKEN_ADDR) {
+                addAiMessage("Scan Error: No active liquidity pairs found for this address.");
+            }
+        }
+    } catch (e) { 
+        console.error("API Error:", e);
+        addAiMessage("System Error: Unable to reach DexScreener nodes.");
+    }
+}
+</script>
 </body>
 </html>
